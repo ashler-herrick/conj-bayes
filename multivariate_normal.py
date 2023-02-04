@@ -4,11 +4,20 @@ from scipy import stats
 # class for multivariate normal likelihood using multivariate normal prior
 # assumes known covariance
 class multivariate_normal:
-    def __init__(self, mu_0 = 0, Sigma_0 = None):
-        return 0
+    def __init__(self, mu_0 = np.zeros(2), Sigma_0 = np.identity((2,2)), Sigma = np.identity((2,2))):
+        self.mu_0 = mu_0
+        self.Sigma_0 = Sigma_0
+        self.Sigma = Sigma
 
     #update the parameters of the distribution
-    def update_params(self, mu_0, Sigma_0, Sigma, data):
+    def update_params(self, data, mu_0 = None, Sigma_0 = None, Sigma = None):
+        #use default vals from initialization if none are passed
+        if mu_0 == None:
+            mu_0 = self.mu_0
+        if Sigma_0 == None:
+            Sigma_0 = self.Sigma_0
+        if Sigma == None:
+            Sigma = self.Sigma
     
         #make sure the data is a numpy array
         data = np.array(data)
@@ -42,14 +51,27 @@ class multivariate_normal:
 
 class normal_inv_wishart:
 
-    def __init__(self,kappa_0, nu_0):
+    #default to two dimensional model with noninformative priors
+    def __init__(self, kappa_0 = 0, nu_0 = 3, mu_0 = np.zeros(2), Sigma_0 = np.identity((2,2))):
+        self.mu_0 = mu_0
+        self.Sigma_0 = Sigma_0
         #kappa_0 expresses prior confidence in the mean
         self.kappa_0 = kappa_0
         #nu_0 expresses prior confidence in the covariance matrix
         self.nu_0 = nu_0
 
-    def update_params(self, mu_0, Sigma_0, data):
-        
+    def update_params(self, data, kappa_0 = None, nu_0 = None, mu_0 = None, Sigma_0 = None):
+        #use default vals from initialization if none are passed
+        if kappa_0 == None:
+            kappa_0 = self.kappa_0
+        if nu_0 == None:
+            nu_0 = self.nu_0
+        if mu_0 == None:
+            mu_0 = self.mu_0
+        if Sigma_0 == None:
+            Sigma_0 = self.Sigma_0
+
+        #make sure data is a numpy array
         data = data.to_numpy()
 
         n = len(data)
@@ -73,6 +95,7 @@ class normal_inv_wishart:
 
         self.S_n = S_0 + S + np.outer(x_bar - mu_0,x_bar - mu_0)*((self.kappa_0 * n)/(self.kappa_n))
 
+        #store posterior stats as attributes
         self.post_mode_mu = self.mu_n
 
         self.post_mode_Sigma = self.S_n * (self.nu_n + self.d + 1)
