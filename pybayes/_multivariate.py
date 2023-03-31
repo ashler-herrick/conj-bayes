@@ -1,7 +1,7 @@
 from scipy import stats
 import numpy as np
 
-
+#class for multivariate likelihood
 class multivariate_normal():
 
     #default to two dimensional model with noninformative priors
@@ -22,27 +22,34 @@ class multivariate_normal():
         #nu_0 expresses prior confidence in the covariance matrix
         self.nu_0 = nu_0
 
-    def update_params(self, data, mu_0 = None, Sigma_0 = None, Sigma = None):
+    def update_params(self, data, kappa_0 = None, nu_0 = None, mu_0 = None, Sigma_0 = None, Sigma = None):
         #use default vals from initialization if none are passed
-        if mu_0 == None:
-            mu_0 = self.mu_0
-        if Sigma_0 == None:
-            Sigma_0 = self.Sigma_0
-        if Sigma == None:
-            Sigma = self.Sigma
+        if mu_0 != None:
+            self.mu_0 = mu_0
+        if Sigma_0 != None:
+            self.Sigma_0 = Sigma_0
+        if Sigma != None:
+            self.Sigma = Sigma
+        if kappa_0 != None:
+            self.kappa_0 = kappa_0
+        if nu_0 != None:
+            self.nu_0
         
         #make sure data is a numpy array
         data = data.to_numpy()
 
+        #make sure the data is a numpy array
+        data = np.array(data)
+
+        #get n and d
+        n = len(data)
+        self.d = len(data[0])
+        
+        #assumes each observation is a row
+        x_bar = np.mean(data,axis = 0)
+
         if self.prior == 'multivariate_normal':
-            #make sure the data is a numpy array
-            data = np.array(data)
-            n = len(data)
 
-            self.d = len(data[0])
-
-            #assumes each observation is a row
-            x_bar = np.mean(data,axis = 0)
 
             #Covariance matrix related calculations
             self.Sigma = Sigma
@@ -64,8 +71,6 @@ class multivariate_normal():
 
         if self.prior == 'norm_inv_wishart':
 
-            n = len(data)
-            self.d = len(data[0])
 
             #these are used as weights
             self.kappa_n = self.kappa_0 + n
@@ -73,9 +78,6 @@ class multivariate_normal():
 
             #our initial value for the sum of squares matrix is the initial value of Sigma_0 times the factor that is divided in the post pred
             S_0 = (self.nu_0 - self.d + 1)*Sigma_0
-
-            #sample mean
-            x_bar = np.mean(data, axis = 0)
 
             #weighted average of of prior and sample    
             self.mu_n = (1/(self.kappa_n)) * (self.kappa_0 * self.mu_0 + n * x_bar)
