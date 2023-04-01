@@ -5,7 +5,7 @@ import numpy as np
 class multivariate_normal():
 
     #default to two dimensional model with noninformative priors
-    def __init__(self, prior, kappa_0 = 0, nu_0 = 3, mu_0 = np.zeros(2), Sigma_0 = np.identity((2,2)), Sigma = np.identity((2,2))):
+    def __init__(self, prior, kappa_0 = 0, nu_0 = 3, mu_0 = np.zeros(2), Sigma_0 = np.identity(2), Sigma = np.identity(2)):
         # print a warning if an invalid prior is entered
         if prior not in ('multivariate_normal','norm_inv_wishart'):
             print("Warning: invalid prior entered. Choose either 'multivariate_normal' or 'norm_inv_wishart'")
@@ -123,6 +123,8 @@ class normal:
 
     def update_model(self, data, kappa_0 = None, nu_0 = None, mu_0 = None, sigma_sq_0 = None, sigma_sq = None):
         #if values are passed then update the values from initialization
+
+        #TODO: find a way to automate all this so I don't have to write so many lines
         if mu_0 != None:
             self.mu_0 = mu_0 
         if sigma_sq != None:
