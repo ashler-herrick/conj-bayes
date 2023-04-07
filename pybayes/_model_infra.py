@@ -11,3 +11,7 @@ class model:
             if not hasattr(self,attr):
                 print(f"Parameter {attr} not found. Please add {attr} to the model.")
 
+    def describe(self):
+        print(self.__dict__)
+
+    #TODO: add automatic plotting?
