@@ -7,9 +7,11 @@ from ._model_infra import model
 class binomial(model):
 
     def update_model(self, data, **params):
+
         super()._update_model(**params)
         self._check_params(['alpha_0','beta_0','m'])
 
+        data = np.asarray(data)
         n = len(data)
 
         self.alpha_n = self.alpha_0 + np.sum(data)
@@ -38,7 +40,8 @@ class bernoulli(model):
         super()._update_model(**params)
         self._check_params(['alpha_0','beta_0'])
 
-        self.p_0 = self.alpha_0/ (self.alpha_0 + self.beta_0)
+        
+        data = np.asarray(data)
         n = len(data)
 
         self.alpha_n = self.alpha_0 + np.sum(data)
@@ -57,18 +60,20 @@ class bernoulli(model):
     
     def sample_prior_predictive(self, n = 1, seed = None):
         self._check_params(['alpha_0','beta_0'])
-        return stats.bernoulli.rvs(p = self.p_n, size = n, random_state = seed)
+        self.p_0 = self.alpha_0/ (self.alpha_0 + self.beta_0)
+        return stats.bernoulli.rvs(p = self.p_0, size = n, random_state = seed)
 
     def sample_posterior_predictive(self, n = 1, seed = None):
         return stats.bernoulli.rvs(p = self.p_n, size = n, random_state = seed)
     
 #negative binomial likelihood
-class negative_binomial:
+class negative_binomial(model):
     
     def update_model(self, data, **params):
         super()._update_model(**params)
         self._check_params(['alpha_0','beta_0','r'])
 
+        data = np.asarray(data)
         n = len(data)
 
         self.alpha_n = self.alpha_0 + self.r * n
@@ -93,6 +98,104 @@ class negative_binomial:
         random_state = np.random.RandomState(seed)
         p = random_state.beta(a = self.alpha_n, b = self.beta_n, size = n)
         return random_state.negative_binomial(n = self.r, p = p, size = n)
+    
+class poisson(model):
+
+    def update_model(self, data, **params):
+        super()._update_model(params,data)
+        self._check_params(['k_0','theta_0'])
+
+        data = np.asarray(data)
+        n = len(data)
+
+        self.k_n = self.k_0 + np.sum(data)
+        self.theta_n = self.theta_0/(n*self.theta_0 + 1)
+
+    def posterior_mode(self):
+        return (self.alpha_n - 1)/(self.alpha_n + self.beta_n - 2)
+    
+    def posterior_mean(self):
+        return self.alpha_n/(self.alpha_n + self.beta_n)
+    
+    def sample_posterior(self, n = 1, seed = None):
+        random_state = np.random.RandomState(seed)
+        return random_state.gamma(shape = self.k_n, scale = self.theta_n, size = n)
+    
+    def sample_prior_predictive(self, n = 1, seed = None):
+        random_state = np.random.RandomState(seed)
+        return  random_state.negative_binomial(n = self.k_0, p = 1/(self.theta_0 + 1), size = n)
+
+class categorial(model):
+
+    def update_model(self, data, **params):
+        super()._update_model(**params)
+        self._check_params(['alpha_0'])
+
+        data = np.asarray(data)
+
+        self.alpha_n = self.alpha_0 + np.sum(data,axis = 0)
+
+    def posterior_mean(self):
+        return self.alpha_n/np.sum(self.alpha_n)
+     
+    def posterior_mode(self):
+        return (self.alpha_n - 1)/(np.sum(self.alpha_n)-len(self.alpha_n))
+    
+    def sample_prior_predictive(self,n = 1, seed = None):
+        self._check_params(['alpha_0'])
+
+        self.p_0 = self.alpha_0/np.sum(self.alpha_0)
+        random_state = np.random.RandomState(seed)
+        return random_state.choice(np.ones(len(self.p_0)), p = self.p_0)
+    
+    def sample_posterior_predictive(self, n = 1, seed = None):
+        self.p = self.alpha_n/np.sum(self.alpha_n)
+        random_state = np.random.RandomState(seed)
+        return random_state.choice(np.ones(len(self.p)), p = self.p)
+    
+
+class multinomial(model):
+
+    def update_model(self, data, **params):
+        super()._update_model(**params)
+        self._check_params(['alpha_0','n'])
+
+        data = np.asarray(data)
+
+        self.alpha_n = self.alpha_0 + np.sum(data,axis = 0)
+
+    def posterior_mean(self):
+        return self.alpha_n/np.sum(self.alpha_n)
+     
+    def posterior_mode(self):
+        return (self.alpha_n - 1)/(np.sum(self.alpha_n)-len(self.alpha_n))
+    
+    def sample_prior_predictive(self,n = 1, seed = None):
+        self._check_params(['alpha_0','n'])
+
+        random_state = np.random.RandomState(seed)
+        p = random_state.dirichlet(self.alpha_0)
+        return random_state.choice(np.ones(len(self.alpha_0)), p = p)
+    
+    def sample_posterior_predictive(self, n = 1, seed = None):
+        random_state = np.random.RandomState(seed)
+        p = random_state.dirichlet(self.alpha_n)
+        return random_state.choice(np.ones(len(self.alpha_n)), p = p)
+    
+class hypergeometric(model):
+
+    def update_model(self, data, **params):
+        super()._update_model(**params)
+        self._check_params(['N', 'alpha_0','beta_0'])
+
+        data = np.asarray(data)
+
+        self.alpha_n = self.alpha_0 + np.sum(data,axis = 0)
+
+
+
+
+    
 
 
     
