@@ -1,5 +1,6 @@
 from scipy import stats
 import numpy as np
+import matplotlib.pyplot as plt
 from ._model_infra import model
 
 
@@ -32,6 +33,29 @@ class binomial(model):
     
     def sample_posterior_predictive(self, n = 1, seed = None):
         return stats.betabinom.rvs(n = self.m, a = self.alpha_n, b = self.beta_n, size = n, random_state = seed)
+    
+    def plot(self, plot_type = None):
+        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        x = np.linspace(0,1,100)
+        if self.plot_type == 'prior':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+        
+        if self.plot_type == 'posterior':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+
+        if self.plot_type == 'both':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+
+
+        plt.xlabel('p')
+        plt.ylabel('pdf')
+        plt.legend()
+        plt.title("Distribution of p")
+        plt.show()
+
+
+
     
 #bernoulli likelihood
 class bernoulli(model):
@@ -66,6 +90,26 @@ class bernoulli(model):
     def sample_posterior_predictive(self, n = 1, seed = None):
         return stats.bernoulli.rvs(p = self.p_n, size = n, random_state = seed)
     
+    def plot(self, plot_type = None):
+        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        x = np.linspace(0,1,100)
+        if self.plot_type == 'prior':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+        
+        if self.plot_type == 'posterior':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+
+        if self.plot_type == 'both':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+
+
+        plt.xlabel('p')
+        plt.ylabel('pdf')
+        plt.legend()
+        plt.title("Distribution of p")
+        plt.show()
+    
 #negative binomial likelihood
 class negative_binomial(model):
     
@@ -99,31 +143,80 @@ class negative_binomial(model):
         p = random_state.beta(a = self.alpha_n, b = self.beta_n, size = n)
         return random_state.negative_binomial(n = self.r, p = p, size = n)
     
+    def plot(self, plot_type = None):
+        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        x = np.linspace(0,1,100)
+        if self.plot_type == 'prior':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+        
+        if self.plot_type == 'posterior':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+
+        if self.plot_type == 'both':
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+
+
+        plt.xlabel('p')
+        plt.ylabel('pdf')
+        plt.legend()
+        plt.title("Distribution of p")
+        plt.show()
+    
 class poisson(model):
 
     def update_model(self, data, **params):
         super()._update_model(params,data)
-        self._check_params(['k_0','theta_0'])
+        self._check_params(['alpha_0','beta_0','r'])
 
         data = np.asarray(data)
         n = len(data)
 
-        self.k_n = self.k_0 + np.sum(data)
-        self.theta_n = self.theta_0/(n*self.theta_0 + 1)
+        self.alpha_n = self.alpha_0 + self.r * n
+        self.beta_n = self.beta_0 + np.sum(data)
 
     def posterior_mode(self):
-        return (self.alpha_n - 1)/(self.alpha_n + self.beta_n - 2)
+        return (self.alpha_n - 1)/self.beta_n
     
     def posterior_mean(self):
-        return self.alpha_n/(self.alpha_n + self.beta_n)
+        return self.alpha/self.beta
     
+    def sample_prior(self, n = 1, seed = None):
+        random_state = np.random.RandomState(seed)
+        return random_state.gamma(shape = self.alpha_0, scale = 1/self.beta_0, size = n)
+     
     def sample_posterior(self, n = 1, seed = None):
         random_state = np.random.RandomState(seed)
-        return random_state.gamma(shape = self.k_n, scale = self.theta_n, size = n)
+        return random_state.gamma(shape = self.alpha_n, scale = 1/self.beta_n, size = n)
     
     def sample_prior_predictive(self, n = 1, seed = None):
         random_state = np.random.RandomState(seed)
-        return  random_state.negative_binomial(n = self.k_0, p = 1/(self.theta_0 + 1), size = n)
+        return  random_state.negative_binomial(n = self.alpha_0, p = self.beta_0/(self.beta_0 + 1), size = n)
+    
+    def sample_posterior_predictive(self, n = 1, seed = None):
+        random_state = np.random.RandomState(seed)
+        return  random_state.negative_binomial(n = self.alpha_n, p = self.beta_n/(self.beta_n + 1), size = n)
+    
+    def plot(self, plot_type = None):
+        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+
+        x = np.linspace(0,1,100)
+        if self.plot_type == 'prior':
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0))
+        
+        if self.plot_type == 'posterior':
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n))
+
+        if self.plot_type == 'both':
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0))
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n))
+
+
+        plt.xlabel('p')
+        plt.ylabel('pdf')
+        plt.legend()
+        plt.title("Distribution of p")
+        plt.show()
 
 class categorial(model):
 
