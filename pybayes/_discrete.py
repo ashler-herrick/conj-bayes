@@ -1,7 +1,7 @@
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
-from ._model_infra import model
+from _model_infra import model
 
 
 #class for binomial likelihood  
@@ -35,7 +35,7 @@ class binomial(model):
         return stats.betabinom.rvs(n = self.m, a = self.alpha_n, b = self.beta_n, size = n, random_state = seed)
     
     def plot(self, plot_type = None):
-        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
@@ -91,7 +91,7 @@ class bernoulli(model):
         return stats.bernoulli.rvs(p = self.p_n, size = n, random_state = seed)
     
     def plot(self, plot_type = None):
-        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
@@ -144,7 +144,7 @@ class negative_binomial(model):
         return random_state.negative_binomial(n = self.r, p = p, size = n)
     
     def plot(self, plot_type = None):
-        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
@@ -198,7 +198,7 @@ class poisson(model):
         return  random_state.negative_binomial(n = self.alpha_n, p = self.beta_n/(self.beta_n + 1), size = n)
     
     def plot(self, plot_type = None):
-        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
 
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
@@ -280,7 +280,7 @@ class hypergeometric(model):
 
     def update_model(self, data, **params):
         super()._update_model(**params)
-        self._check_params(['N', 'alpha_0','beta_0'])
+        self._check_params(['N','n', 'alpha_0','beta_0'])
 
         data = np.asarray(data)
 
@@ -318,7 +318,7 @@ class geometric(model):
         return random_state.geometric(p = p, size = n)
     
     def plot(self, plot_type = None):
-        check = self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
