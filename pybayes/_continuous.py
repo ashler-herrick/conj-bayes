@@ -1,45 +1,22 @@
 from scipy import stats
 import numpy as np
+import matplotlib.pyplot as plt
+from _model_infra import model
 
 #class for multivariate likelihood
-class multivariate_normal():
+class multivariate_normal(model):
 
-    #default to two dimensional model with noninformative priors
-    def __init__(self, prior, kappa_0 = 0, nu_0 = 3, mu_0 = np.zeros(2), Sigma_0 = np.identity(2), Sigma = np.identity(2)):
-        # print a warning if an invalid prior is entered
-        if prior not in ('multivariate_normal','norm_inv_wishart'):
-            print("Warning: invalid prior entered. Choose either 'multivariate_normal' or 'norm_inv_wishart'")
-        self.prior = prior
-        self.mu_0 = mu_0
-        self.Sigma_0 = Sigma_0
-
-        #Sigma is only used for the 'multivariate_normal' prior where the covariance matrix is assumed to be known
-        self.Sigma = Sigma
-
-        #kappa_0 and nu_0 are only used for the 'norm_inv_wishart' prior
-        #kappa_0 expresses prior confidence in the mean
-        self.kappa_0 = kappa_0
-        #nu_0 expresses prior confidence in the covariance matrix
-        self.nu_0 = nu_0
-
-    def update_model(self, data, kappa_0 = None, nu_0 = None, mu_0 = None, Sigma_0 = None, Sigma = None):
-        #use default vals from initialization if none are passed
-        if mu_0 != None:
-            self.mu_0 = mu_0
-        if Sigma_0 != None:
-            self.Sigma_0 = Sigma_0
-        if Sigma != None:
-            self.Sigma = Sigma
-        if kappa_0 != None:
-            self.kappa_0 = kappa_0
-        if nu_0 != None:
-            self.nu_0
+    def update_model(self, data, **params):
+        super()._update_model(**params)
+        if not hasattr(self,'prior'):
+                print("Please enter a valid prior distribution: 'norm_inv_wishart' or 'multiviariate_normal'")
+        if self.prior == 'norm_inv_wishart':
+            self._check_params(['kappa_0','nu_0','mu_0','Sigma_0'])
+        if self.prior == 'multivariate_normal':
+            self._check_params(['mu_0','Sigma_0','Sigma'])
         
         #make sure data is a numpy array
-        data = data.to_numpy()
-
-        #make sure the data is a numpy array
-        data = np.array(data)
+        data = np.asarray(data)
 
         #get n and d
         n = len(data)
