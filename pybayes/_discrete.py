@@ -35,18 +35,19 @@ class binomial(model):
         return stats.betabinom.rvs(n = self.m, a = self.alpha_n, b = self.beta_n, size = n, random_state = seed)
     
     def plot(self, plot_type = None):
-        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
         if self.plot_type == 'posterior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
         if self.plot_type == 'both':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
-
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
         plt.xlabel('p')
         plt.ylabel('pdf')
@@ -91,17 +92,19 @@ class bernoulli(model):
         return stats.bernoulli.rvs(p = self.p_n, size = n, random_state = seed)
     
     def plot(self, plot_type = None):
-        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
         if self.plot_type == 'posterior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
         if self.plot_type == 'both':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
 
         plt.xlabel('p')
@@ -144,17 +147,19 @@ class negative_binomial(model):
         return random_state.negative_binomial(n = self.r, p = p, size = n)
     
     def plot(self, plot_type = None):
-        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
         if self.plot_type == 'posterior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
         if self.plot_type == 'both':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
 
         plt.xlabel('p')
@@ -202,14 +207,14 @@ class poisson(model):
 
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
-            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0))
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0), label = 'Prior')
         
         if self.plot_type == 'posterior':
-            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n))
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n), label = 'Posterior')
 
         if self.plot_type == 'both':
-            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0))
-            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n))
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0), label = 'Prior')
+            plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n), label = 'Posterior')
 
 
         plt.xlabel('p')
@@ -317,18 +322,20 @@ class geometric(model):
         p = random_state.beta(a = self.alpha_n, b = self.beta_n, size = n)
         return random_state.geometric(p = p, size = n)
     
-    def plot(self, plot_type = None):
-        self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+    def plot(self, plot_type = None): 
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
         if self.plot_type == 'posterior':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
         if self.plot_type == 'both':
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0))
-            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n))
+            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
+            plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
 
         plt.xlabel('p')

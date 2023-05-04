@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class model:
     def __init__(self,**params):
         self.__dict__.update(params)
@@ -14,14 +16,27 @@ class model:
         return True
     
     def _check_plot(self, attr_list, plot_type):
-        check = self._check_params(['alpha_0','beta_0','alpha_n','beta_n'])
+        #check if parameter is missing
+        check = self._check_params(attr_list)
+        #if we are missing a parameter and no plot was specified plot the prior
         if check == False and plot_type == None:
-            plot_type = 'prior'
-        elif check == False and plot_type == None:
-            plot_type = 'both'
+            self.plot_type = 'prior'
+        #if we have all parameters then plot both
+        elif check == True and plot_type == None:
+            self.plot_type = 'both'
+        #otherwise plot the specified 
         else:
             self.plot_type = plot_type
 
+    def _show_plot(self, xlab, ylab):
+        title = f'Distribution of {xlab}'
+        plt.xlabel(xlab)
+        plt.ylabel(ylab)
+        plt.legend()
+        plt.title(title)
+        plt.show()
+
+    #TODO: make the describe method look nicer. maybe print a dataframe
     def describe(self):
         print(self.__dict__)
 
