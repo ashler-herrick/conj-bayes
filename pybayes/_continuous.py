@@ -248,6 +248,11 @@ class normal:
 
             if plot_type == 'both':
                 self._check_plot(['mu_0','sigma_0','kappa_0','nu_0','mu_n','sigma_n','kappa_n','nu_n'])
+                self._plot_norm_inv_chi_sq(mu = self.mu_0, sigma = self.sigma_0, kappa = self.kappa_0, nu = self.nu_0, label = 'Prior')
+                self._plot_norm_inv_chi_sq(mu = self.mu_n, sigma = self.sigma_n, kappa = self.kappa_n, nu = self.nu_n, label = 'Posterior')
+
+
+#TODO: Add other continuous models
 
 
 
