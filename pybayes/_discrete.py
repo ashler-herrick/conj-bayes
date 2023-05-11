@@ -94,7 +94,7 @@ class bernoulli(model):
     def plot(self, plot_type = None):
         x = np.linspace(0,1,100)
         if self.plot_type == 'prior':
-            self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
+            self._check_plot(['alpha_0','beta_0'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
         if self.plot_type == 'posterior':

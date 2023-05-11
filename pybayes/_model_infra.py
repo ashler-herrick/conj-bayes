@@ -18,9 +18,9 @@ class model:
     def _check_plot(self, attr_list, plot_type):
         #check if parameter is missing
         check = self._check_params(attr_list)
-        #if we are missing a parameter and no plot was specified plot the prior
+        #if we are missing a parameter 
         if check == False and plot_type == None:
-            self.plot_type = 'prior'
+            print('Specify required parameters.')
         #if we have all parameters then plot both
         elif check == True and plot_type == None:
             self.plot_type = 'both'

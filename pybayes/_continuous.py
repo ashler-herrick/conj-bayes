@@ -241,15 +241,28 @@ class normal:
             if plot_type == 'prior':
                 self._check_plot(['mu_0','sigma_0','kappa_0','nu_0'])
                 self._plot_norm_inv_chi_sq(mu = self.mu_0, sigma = self.sigma_0, kappa = self.kappa_0, nu = self.nu_0, label = 'Prior')
-                
+                self._showplot(xlab = 'sigma^2', ylab = 'pdf')
+                x = np.linspace(-4 * self.sigma_0, 4 * self.sigma_0, 100)
+                plt.plot(stats.t.pdf(x, loc = self.mu_0, scale = self.sigma_0**2/self.kappa_0), label = 'Prior')
+                self._showplot(xlab = 'mu', ylab = 'pdf')
             if plot_type == 'posterior':
                 self._check_plot(['mu_n','sigma_n','kappa_n','nu_n'])
                 self._plot_norm_inv_chi_sq(mu = self.mu_n, sigma = self.sigma_n, kappa = self.kappa_n, nu = self.nu_n, label = 'Posterior')
+                self._showplot(xlab = 'sigma^2', ylab = 'pdf')
+                x = np.linspace(-4 * self.sigma_n, 4 * self.sigma_n, 100)
+                plt.plot(stats.t.pdf(x, loc = self.mu_n, scale = self.sigma_n**2/self.kappa_n), label = 'Posterior')
+                self._showplot(xlab = 'mu', ylab = 'pdf')
 
             if plot_type == 'both':
                 self._check_plot(['mu_0','sigma_0','kappa_0','nu_0','mu_n','sigma_n','kappa_n','nu_n'])
                 self._plot_norm_inv_chi_sq(mu = self.mu_0, sigma = self.sigma_0, kappa = self.kappa_0, nu = self.nu_0, label = 'Prior')
                 self._plot_norm_inv_chi_sq(mu = self.mu_n, sigma = self.sigma_n, kappa = self.kappa_n, nu = self.nu_n, label = 'Posterior')
+                self._showplot(xlab = 'sigma^2', ylab = 'pdf')
+                x = np.linspace(-4 * self.sigma_0, 4 * self.sigma_0, 100)
+                plt.plot(stats.t.pdf(x, loc = self.mu_0, scale = self.sigma_0**2/self.kappa_0), label = 'Prior')
+                x = np.linspace(-4 * self.sigma_n, 4 * self.sigma_n, 100)
+                plt.plot(stats.t.pdf(x, loc = self.mu_n, scale = self.sigma_n**2/self.kappa_n), label = 'Posterior')
+                self._showplot(xlab = 'mu', ylab = 'pdf')
 
 
 #TODO: Add other continuous models
