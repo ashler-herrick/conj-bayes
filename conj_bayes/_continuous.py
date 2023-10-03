@@ -1,7 +1,7 @@
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
-from _model_infra import model
+from conj_bayes._model_infra import model
 
 #class for multivariate likelihood
 class multivariate_normal(model):

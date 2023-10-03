@@ -1,10 +1,12 @@
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
-from _model_infra import model
+from conj_bayes._model_infra import model
 
 
-#class for binomial likelihood  
+#==================================================
+#binomial likelihood
+#==================================================
 class binomial(model):
 
     def update_model(self, data, **params):
@@ -34,17 +36,17 @@ class binomial(model):
     def sample_posterior_predictive(self, n = 1, seed = None):
         return stats.betabinom.rvs(n = self.m, a = self.alpha_n, b = self.beta_n, size = n, random_state = seed)
     
-    def plot(self, plot_type = None):
+    def plot(self, plot_type):
         x = np.linspace(0,1,100)
-        if self.plot_type == 'prior':
+        if plot_type == 'prior':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
-        if self.plot_type == 'posterior':
+        if plot_type == 'posterior':
             self._check_plot(['alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
-        if self.plot_type == 'both':
+        if plot_type == 'both':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
@@ -58,7 +60,9 @@ class binomial(model):
 
 
     
+#==================================================
 #bernoulli likelihood
+#==================================================
 class bernoulli(model):
 
     def update_model(self, data, **params):
@@ -91,17 +95,17 @@ class bernoulli(model):
     def sample_posterior_predictive(self, n = 1, seed = None):
         return stats.bernoulli.rvs(p = self.p_n, size = n, random_state = seed)
     
-    def plot(self, plot_type = None):
+    def plot(self, plot_type):
         x = np.linspace(0,1,100)
-        if self.plot_type == 'prior':
+        if plot_type == 'prior':
             self._check_plot(['alpha_0','beta_0'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
-        if self.plot_type == 'posterior':
+        if plot_type == 'posterior':
             self._check_plot(['alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
-        if self.plot_type == 'both':
+        if plot_type == 'both':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
@@ -113,7 +117,9 @@ class bernoulli(model):
         plt.title("Distribution of p")
         plt.show()
     
-#negative binomial likelihood
+#==================================================
+#negative_binomial likelihood
+#==================================================
 class negative_binomial(model):
     
     def update_model(self, data, **params):
@@ -146,17 +152,17 @@ class negative_binomial(model):
         p = random_state.beta(a = self.alpha_n, b = self.beta_n, size = n)
         return random_state.negative_binomial(n = self.r, p = p, size = n)
     
-    def plot(self, plot_type = None):
+    def plot(self, plot_type):
         x = np.linspace(0,1,100)
-        if self.plot_type == 'prior':
+        if plot_type == 'prior':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
-        if self.plot_type == 'posterior':
+        if plot_type == 'posterior':
             self._check_plot(['alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
-        if self.plot_type == 'both':
+        if plot_type == 'both':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
@@ -167,12 +173,16 @@ class negative_binomial(model):
         plt.legend()
         plt.title("Distribution of p")
         plt.show()
-    
+
+
+#==================================================
+#poisson likelihood
+#==================================================
 class poisson(model):
 
     def update_model(self, data, **params):
-        super()._update_model(params,data)
-        self._check_params(['alpha_0','beta_0','r'])
+        super()._update_model(**params)
+        self._check_params(['alpha_0','beta_0'])
 
         data = np.asarray(data)
         n = len(data)
@@ -184,7 +194,7 @@ class poisson(model):
         return (self.alpha_n - 1)/self.beta_n
     
     def posterior_mean(self):
-        return self.alpha/self.beta
+        return self.alpha_n/self.beta_n
     
     def sample_prior(self, n = 1, seed = None):
         random_state = np.random.RandomState(seed)
@@ -202,28 +212,31 @@ class poisson(model):
         random_state = np.random.RandomState(seed)
         return  random_state.negative_binomial(n = self.alpha_n, p = self.beta_n/(self.beta_n + 1), size = n)
     
-    def plot(self, plot_type = None):
+    def plot(self, plot_type):
         self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
 
-        x = np.linspace(0,1,100)
-        if self.plot_type == 'prior':
+        x = np.linspace(0,2 * self.alpha_n/self.beta_n,100)
+        if plot_type == 'prior':
             plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0), label = 'Prior')
         
-        if self.plot_type == 'posterior':
+        if plot_type == 'posterior':
             plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n), label = 'Posterior')
 
-        if self.plot_type == 'both':
+        if plot_type == 'both':
             plt.plot(x,stats.gamma.pdf(x, a = self.alpha_0, scale = 1/self.beta_0), label = 'Prior')
             plt.plot(x,stats.gamma.pdf(x, a = self.alpha_n, scale = 1/self.beta_n), label = 'Posterior')
 
 
-        plt.xlabel('p')
+        plt.xlabel('lambda')
         plt.ylabel('pdf')
         plt.legend()
-        plt.title("Distribution of p")
+        plt.title("Distribution of lambda")
         plt.show()
 
-class categorial(model):
+#==================================================
+#categorial likelihood
+#==================================================
+class categorical(model):
 
     def update_model(self, data, **params):
         super()._update_model(**params)
@@ -250,8 +263,10 @@ class categorial(model):
         self.p = self.alpha_n/np.sum(self.alpha_n)
         random_state = np.random.RandomState(seed)
         return random_state.choice(np.ones(len(self.p)), p = self.p)
-    
 
+#==================================================
+#multinomial likelihood
+#==================================================    
 class multinomial(model):
 
     def update_model(self, data, **params):
@@ -280,17 +295,9 @@ class multinomial(model):
         p = random_state.dirichlet(self.alpha_n)
         return random_state.choice(np.ones(len(self.alpha_n)), p = p)
 
-#TODO: finish hypergeometric 
-class hypergeometric(model):
-
-    def update_model(self, data, **params):
-        super()._update_model(**params)
-        self._check_params(['N','n', 'alpha_0','beta_0'])
-
-        data = np.asarray(data)
-
-        self.alpha_n = self.alpha_0 + np.sum(data,axis = 0)
-
+#==================================================
+#geometric likelihood
+#==================================================    
 class geometric(model):
 
     def update_model(self, data, **params):
@@ -318,21 +325,22 @@ class geometric(model):
         return random_state.geometric(p = p, size = n)
 
     def sample_posterior_predictive(self, n = 1, seed = None):
+        self._check_params(['alpha_0','beta_0','alpha_n','beta_n'])
         random_state = np.random.RandomState(seed)
         p = random_state.beta(a = self.alpha_n, b = self.beta_n, size = n)
         return random_state.geometric(p = p, size = n)
     
-    def plot(self, plot_type = None): 
+    def plot(self, plot_type): 
         x = np.linspace(0,1,100)
-        if self.plot_type == 'prior':
+        if plot_type == 'prior':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
         
-        if self.plot_type == 'posterior':
+        if plot_type == 'posterior':
             self._check_plot(['alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
 
-        if self.plot_type == 'both':
+        if plot_type == 'both':
             self._check_plot(['alpha_0','beta_0','alpha_n','beta_n'], plot_type)
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_0, b = self.beta_0), label = 'Prior')
             plt.plot(x,stats.beta.pdf(x, a = self.alpha_n, b = self.beta_n), label = 'Posterior')
@@ -344,6 +352,16 @@ class geometric(model):
         plt.title("Distribution of p")
         plt.show()
     
+#TODO: finish hypergeometric 
+class hypergeometric(model):
+
+    def update_model(self, data, **params):
+        super()._update_model(**params)
+        self._check_params(['N','n', 'alpha_0','beta_0'])
+
+        data = np.asarray(data)
+
+        self.alpha_n = self.alpha_0 + np.sum(data,axis = 0)
 
 
 
