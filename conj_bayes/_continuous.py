@@ -1,6 +1,7 @@
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 from conj_bayes._model_infra import model
 
 #class for multivariate likelihood
@@ -113,7 +114,19 @@ class multivariate_normal(model):
             return stats.multivariate_t.rvs(loc = self.mu_n, scale = self.S_n * (self.kappa_n + 1)/(self.kappa_n * (self.nu_n - self.d + 1)), df = self.d, size = n, random_state = seed)
 
 
-class normal:
+class normal(model):
+
+    #helper function for the plotting with the norm inverse chi squared prior
+    def _plot_norm_inv_chi_sq(self, mu, sigma, kappa, nu, label):
+        #give some extra width since its student t
+        x = np.linspace(-4 * sigma, 4 * sigma, 100)
+        plt.plot(stats.t.pdf(loc = mu, scale = sigma**2/kappa, df = nu), label = label)
+        self._show_plot(xlab = 'mu', ylab = 'pdf',)
+        #scaled inv chi squared(nu,sigma^2) is inv-gamma with alpha = nu/2 and beta = (nu * sigma^2)/2
+        #our space will cover from 0 to 3x the mean
+        x = np.linspace(0,3 * (nu * sigma**2)/(nu - 2))
+        plt.plot(stats.invgamma.pdf(x = x, a = nu/2, b = (nu * sigma**2)/2), label = label)
+        self._show_plot(xlab = 'sigma^2', ylab = 'pdf')
 
     def update_model(self, data, **params):
         super()._update_model(**params)
@@ -139,7 +152,7 @@ class normal:
             self.nu_n = self.nu_0 + n
 
             #mu_n is a weighted average of prior and sample means
-            self.mu_n = (self.kappa_0 *  self.mu_0 + n * x_bar)/self.kappa
+            self.mu_n = (self.kappa_0 *  self.mu_0 + n * x_bar)/self.kappa_0
 
             res = data - x_bar
             ss = np.sum(res**2)
@@ -199,21 +212,9 @@ class normal:
             self._check_params(['mu_n','sigma_n','d','kappa_n','nu_n'])
             return stats.t.rvs(loc = self.mu_n, scale = ((1 + self.kappa_n)/self.kappa_n) * self.sigma_n**2, df = self.d, size = n, random_state = seed)
 
-    #helper function for the plotting with the norm inverse chi squared prior
-    def _plot_norm_inv_chi_sq(self, mu, sigma, kappa, nu, label):
-        #give some extra width since its student t
-        x = np.linspace(-4 * sigma, 4 * sigma, 100)
-        plt.plot(stats.t.pdf(loc = mu, scale = sigma**2/kappa, df = nu), label = label)
-        self._showplot(xlab = 'mu', ylab = 'pdf',)
-        #scaled inv chi squared(nu,sigma^2) is inv-gamma with alpha = nu/2 and beta = (nu * sigma^2)/2
-        #our space will cover from 0 to 3x the mean
-        x = np.linspace(0,3 * (nu * sigma**2)/(nu - 2))
-        plt.plot(stats.invgamma.pdf(x = x, a = nu/2, b = (nu * sigma**2)/2), label = label)
-        self._showplot(xlab = 'sigma^2', ylab = 'pdf')
-
     def plot(self, plot_type = None):
-        
 
+        #normal plotting
         if self.prior == 'normal':
 
             self._check_plot(['mu_0','sigma_0','mu_n','sigma_n'], plot_type)
@@ -222,50 +223,59 @@ class normal:
 
             if self.plot_type == 'prior':
                 self._check_plot(['mu_0','sigma_0'], plot_type)
-                plt.plot(x_prior,stats.norm.pdf(x_prior, loc = self.mu_0, scale = self.sigma_0), label = 'Prior')
+                pdf = stats.norm.pdf(x_prior,loc = self.mu_0, scale = self.sigma_0)
+                plt.plot(x_prior,pdf, label = 'Prior')
         
             if plot_type == 'posterior':
                 self._check_plot(['mu_n','sigma_n'], plot_type)
-                plt.plot(x_post,stats.norm.pdf(x_post, loc = self.mu_n, scale = self.sigma_n), label = 'Posterior')
+                pdf = stats.norm.pdf(x_post,loc = self.mu_n, scale = self.sigma_n)
+                plt.plot(x_post,pdf, label = 'Posterior')
 
             if plot_type == 'both':
                 self._check_plot(['mu_0','sigma_0','mu_n','sigma_n'], plot_type)
-                plt.plot(x_prior,stats.norm.pdf(x_prior, loc = self.mu_0, scale = self.sigma_0), label = 'Prior')
-                plt.plot(x_post,stats.norm.pdf(x_post, loc = self.mu_n, scale = self.sigma_n), label = 'Posterior')
-        self._showplot(xlab = 'mu', ylab = 'pdf')
+                if self.sigma_n > self.sigma_0:
+                    x_both = x_post
+                else:
+                    x_both = x_prior
+                prior_pdf = stats.norm.pdf(x_both,loc = self.mu_0, scale = self.sigma_0)
+                post_pdf = stats.norm.pdf(x_both,loc = self.mu_n, scale = self.sigma_n)
+                plt.plot(x_both,prior_pdf, label = 'Prior')
+                plt.plot(x_both,post_pdf, label = 'Posterior')
 
-        #Maybe add multivariate plotting here? 
+        self._show_plot(xlab = 'mu', ylab = 'pdf')
+
+        #normal inverse chi squared plotting
         if self.prior == 'norm_inv_chi_sq':
             self._check_plot(['mu_0','sigma_0','kappa_0','nu_0','mu_n','sigma_n','kappa_n','nu_n'])
             x_post = np.linspace(-4 * self.sigma_n, 4 * self.sigma_n, 100)
+
             if plot_type == 'prior':
                 self._check_plot(['mu_0','sigma_0','kappa_0','nu_0'])
                 self._plot_norm_inv_chi_sq(mu = self.mu_0, sigma = self.sigma_0, kappa = self.kappa_0, nu = self.nu_0, label = 'Prior')
-                self._showplot(xlab = 'sigma^2', ylab = 'pdf')
+                self._show_plot(xlab = 'sigma^2', ylab = 'pdf')
                 x = np.linspace(-4 * self.sigma_0, 4 * self.sigma_0, 100)
                 plt.plot(stats.t.pdf(x, loc = self.mu_0, scale = self.sigma_0**2/self.kappa_0), label = 'Prior')
-                self._showplot(xlab = 'mu', ylab = 'pdf')
+                self._show_plot(xlab = 'mu', ylab = 'pdf')
+
             if plot_type == 'posterior':
                 self._check_plot(['mu_n','sigma_n','kappa_n','nu_n'])
                 self._plot_norm_inv_chi_sq(mu = self.mu_n, sigma = self.sigma_n, kappa = self.kappa_n, nu = self.nu_n, label = 'Posterior')
-                self._showplot(xlab = 'sigma^2', ylab = 'pdf')
+                self._show_plot(xlab = 'sigma^2', ylab = 'pdf')
                 x = np.linspace(-4 * self.sigma_n, 4 * self.sigma_n, 100)
                 plt.plot(stats.t.pdf(x, loc = self.mu_n, scale = self.sigma_n**2/self.kappa_n), label = 'Posterior')
-                self._showplot(xlab = 'mu', ylab = 'pdf')
+                self._show_plot(xlab = 'mu', ylab = 'pdf')
 
             if plot_type == 'both':
                 self._check_plot(['mu_0','sigma_0','kappa_0','nu_0','mu_n','sigma_n','kappa_n','nu_n'])
                 self._plot_norm_inv_chi_sq(mu = self.mu_0, sigma = self.sigma_0, kappa = self.kappa_0, nu = self.nu_0, label = 'Prior')
                 self._plot_norm_inv_chi_sq(mu = self.mu_n, sigma = self.sigma_n, kappa = self.kappa_n, nu = self.nu_n, label = 'Posterior')
-                self._showplot(xlab = 'sigma^2', ylab = 'pdf')
+                self._show_plot(xlab = 'sigma^2', ylab = 'pdf')
                 x = np.linspace(-4 * self.sigma_0, 4 * self.sigma_0, 100)
                 plt.plot(stats.t.pdf(x, loc = self.mu_0, scale = self.sigma_0**2/self.kappa_0), label = 'Prior')
                 x = np.linspace(-4 * self.sigma_n, 4 * self.sigma_n, 100)
                 plt.plot(stats.t.pdf(x, loc = self.mu_n, scale = self.sigma_n**2/self.kappa_n), label = 'Posterior')
-                self._showplot(xlab = 'mu', ylab = 'pdf')
+                self._show_plot(xlab = 'mu', ylab = 'pdf')
 
-
-#TODO: Add other continuous models
 
 
 
